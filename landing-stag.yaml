@@ -1,0 +1,66 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+ name: staging
+ labels:
+   name: staging
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  namespace: staging
+  name: landing-stag
+  labels:
+    app: landing-stag
+spec:
+  selector:
+    matchLabels:
+      app: landing-stag
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: landing-stag
+        tier: frontend
+    spec:
+      containers:
+      - image : andronix01/hexalanding-stag:BUILD_NUMBER
+        name: landing-stag
+        ports:
+        - containerPort: 80
+          name: landing-stag
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: staging
+  name: landing-stag-svc
+  labels:
+    app: landing-stag
+spec:
+  selector:
+    app: landing-stag
+    tier: frontend
+  ports:
+  - port: 80
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: staging
+  name: landing-stag-pvc
+  labels:
+    app: landing-stag
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
